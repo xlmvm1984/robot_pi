@@ -52,6 +52,8 @@ class SHA1:
             return  ierror.WXBizMsgCrypt_OK, sha.hexdigest()
 
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             print(e)
             return ierror.WXBizMsgCrypt_ComputeSignature_Error, None
 

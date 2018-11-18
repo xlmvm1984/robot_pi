@@ -10,9 +10,11 @@ from .models import EnterpriseWechatApp
 class MessageVerifyView(View):
     def get(self, request, app_id):
         query_string = request.GET
-        signature, echostr, nonce, ts = query_string.get("signature"), query_string.get("echostr"),\
+        signature, echostr, nonce, ts = query_string.get("msg_signature"), query_string.get("echostr"),\
                                         query_string.get("nonce"), query_string.get("timestamp")
         app = get_object_or_404(EnterpriseWechatApp, pk=app_id)
         enterprise_wechat_service = EnterpriseWechatService.create(app)
-        echo_msg = enterprise_wechat_service.verify_url(signature, echostr, nonce, ts)
+        echo_msg = enterprise_wechat_service.verify_url(signature.encode("utf-8"), echostr.encode("utf-8"),
+                                                        nonce.encode("utf-8"), ts.encode("utf-8"))
+        print(echo_msg)
         return HttpResponse(echo_msg)
