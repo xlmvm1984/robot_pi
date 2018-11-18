@@ -48,8 +48,8 @@ class SHA1:
             sortlist = [token, timestamp, nonce, encrypt]
             sortlist.sort()
             sha = hashlib.sha1()
-            sha.update("".join(sortlist))
-            return  ierror.WXBizMsgCrypt_OK, sha.hexdigest()
+            sha.update("".join(sortlist).encode("utf8"))
+            return ierror.WXBizMsgCrypt_OK, sha.hexdigest()
 
         except Exception as e:
             import traceback
@@ -223,7 +223,7 @@ class WXBizMsgCrypt(object):
     def VerifyURL(self, sMsgSignature, sTimeStamp, sNonce, sEchoStr):
         sha1 = SHA1()
         ret,signature = sha1.getSHA1(self.m_sToken, sTimeStamp, sNonce, sEchoStr)
-        if ret  != 0:
+        if ret != 0:
             return ret, None 
         if not signature == sMsgSignature:
             return ierror.WXBizMsgCrypt_ValidateSignature_Error, None

@@ -22,4 +22,7 @@ class EnterpriseWechatService(object):
         # decrpto echostr & return msg
         wxcpt = WXBizMsgCrypt(self.app.message_token, self.app.message_aes_key, self.app.corp_id)
         ret, echo_msg = wxcpt.VerifyURL(signature, ts, nonce, echostr)
-        return echo_msg
+        if ret == 0:
+            return echo_msg
+        else:
+            return "error: %s" % ret
