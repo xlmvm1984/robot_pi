@@ -7,6 +7,7 @@
 """
 # ------------------------------------------------------------------------
 
+import logging
 import base64
 import string
 import random
@@ -159,37 +160,35 @@ class Prpcrypt(object):
             print(e)
             return ierror.WXBizMsgCrypt_EncryptAES_Error,None
     
-    def decrypt(self,text,receiveid):
+    def decrypt(self,text, receiveid):
         """对解密后的明文进行补位删除
         @param text: 密文 
         @return: 删除填充补位后的明文
         """
         try:
-            cryptor = AES.new(self.key,self.mode,self.key[:16])
+            cryptor = AES.new(self.key, self.mode, self.key[:16])
             # 使用BASE64对密文进行解码，然后AES-CBC解密
-            plain_text  = cryptor.decrypt(base64.b64decode(text))
+            plain_text = cryptor.decrypt(base64.b64decode(text))
+            print("plain text is %s" % plain_text)
         except Exception as e:
             print(e)
-            return  ierror.WXBizMsgCrypt_DecryptAES_Error,None
+            return ierror.WXBizMsgCrypt_DecryptAES_Error, None
         try:
-            pad = ord(plain_text[-1]) 
-            # 去掉补位字符串 
-            #pkcs7 = PKCS7Encoder()
-            #plain_text = pkcs7.encode(plain_text)   
+            pad = plain_text[-1]
             # 去除16位随机字符串
             content = plain_text[16:-pad]
-            json_len = socket.ntohl(struct.unpack("I",content[ : 4])[0])
-            json_content = content[4 : json_len+4] 
-            from_receiveid = content[json_len+4:]
+            json_len = socket.ntohl(struct.unpack("I", content[: 4])[0])
+            json_content = content[4 : json_len+4].decode("utf8")
+            from_receiveid = content[json_len+4:].decode("utf8")
         except Exception as e:
             print(e)
+            import traceback
+            traceback.print_exc()
             return  ierror.WXBizMsgCrypt_IllegalBuffer,None
 
         if  from_receiveid != receiveid:
-            print("receiveid not match")
-            print(from_receiveid)
             return ierror.WXBizMsgCrypt_ValidateCorpid_Error,None
-        return 0,json_content
+        return 0, json_content
     
     def get_random_str(self):
         """ 随机生成16位字符串
@@ -228,8 +227,8 @@ class WXBizMsgCrypt(object):
         if not signature == sMsgSignature:
             return ierror.WXBizMsgCrypt_ValidateSignature_Error, None
         pc = Prpcrypt(self.key)
-        ret,sReplyEchoStr = pc.decrypt(sEchoStr,self.m_sReceiveId)
-        return ret,sReplyEchoStr
+        ret,sReplyEchoStr = pc.decrypt(sEchoStr, self.m_sReceiveId)
+        return ret, sReplyEchoStr
 	
     def EncryptMsg(self, sReplyMsg, sNonce, timestamp = None):
         #将企业回复用户的消息加密打包
