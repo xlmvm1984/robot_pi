@@ -130,7 +130,7 @@ class EnterpriseWechatSendMessageService(object):
         except Exception as e:
             print(e)
 
-    def send_card_msg(self, user_id_list, title, text, highlight=None):
+    def send_card_msg(self, user_id_list, title, text, highlight=None, url="http://robot_pi.szlmhk.com"):
         try:
             response = self.enterprise_wechat_service.core_api.httpCall(
                 CORP_API_TYPE['MESSAGE_SEND'],
@@ -145,7 +145,7 @@ class EnterpriseWechatSendMessageService(object):
                                        '<div class=\"highlight\">%s</div>'
                                        '<div class=\"normal\">%s</div>' % (
                             str(timezone.now())[:19], highlight, text),
-                        'url': "https://www.baidu.com",
+                        'url': url,
                     },
                     'safe': 0,
                 })

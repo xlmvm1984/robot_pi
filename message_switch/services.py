@@ -14,13 +14,15 @@ class RobotInboundService(object):
     def create(cls, uuid, data):
         obj = cls()
         obj.robot = get_object_or_404(RobotPi, uuid=uuid)
+        if isinstance(data, bytes):
+            data = str(data, encoding="utf8")
         obj.data = json.loads(data)
         return obj
 
     def _send_to_wework(self, user_id):
         service = EnterpriseWechatSendMessageService.create(self.robot.app_id)
         return service.send_card_msg(user_id, self.data.get("title"), self.data.get("text"),
-                                     self.data.get("highlight"))
+                                     self.data.get("highlight"), self.data.get("url"))
 
     def send(self):
         user = get_object_or_404(User, pk=self.robot.user_id)

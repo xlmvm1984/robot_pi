@@ -11,6 +11,7 @@ class RobotInboundView(View):
         try:
             s = RobotInboundService.create(uuid, request.body)
             ret = s.send()
+            print(ret)
             return JsonResponse(ret)
         except Exception as e:
             import traceback
