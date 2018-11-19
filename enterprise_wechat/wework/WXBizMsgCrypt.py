@@ -116,7 +116,7 @@ class PKCS7Encoder():
             amount_to_pad = self.block_size
         # 获得补位所用的字符
         pad = chr(amount_to_pad)
-        return text + pad * amount_to_pad
+        return text + bytes(pad * amount_to_pad, encoding="utf8")
     
     def decode(self, decrypted):
         """删除解密后明文的补位字符
@@ -146,10 +146,11 @@ class Prpcrypt(object):
         @return: 加密得到的字符串
         """      
         # 16位随机字符串添加到明文开头
-        text = self.get_random_str() + struct.pack("I",socket.htonl(len(text))) + text + receiveid
+        text = bytes(self.get_random_str(), encoding="utf8") + struct.pack("I",socket.htonl(len(text))) + bytes(text, encoding="utf8") + bytes(receiveid, encoding="utf8")
         # 使用自定义的填充方式对明文进行补位填充
         pkcs7 = PKCS7Encoder()
         text = pkcs7.encode(text)
+        print("length is =============", len(text))
         # 加密    
         cryptor = AES.new(self.key,self.mode,self.key[:16])
         try:
@@ -193,7 +194,7 @@ class Prpcrypt(object):
         """ 随机生成16位字符串
         @return: 16位字符串
         """ 
-        rule = string.letters + string.digits
+        rule = string.ascii_letters + string.digits
         str = random.sample(rule, 16)
         return "".join(str)
 
@@ -244,11 +245,12 @@ class WXBizMsgCrypt(object):
             timestamp = str(int(time.time()))
         # 生成安全签名 
         sha1 = SHA1() 
-        ret,signature = sha1.getSHA1(self.m_sToken, timestamp, sNonce, encrypt)
+        _encrypt = str(encrypt, encoding="utf8")
+        ret,signature = sha1.getSHA1(self.m_sToken, timestamp, sNonce, _encrypt)
         if ret != 0: 
             return ret,None 
         jsonParse = JsonParse()  
-        return ret,jsonParse.generate(encrypt, signature, timestamp, sNonce)  
+        return ret,jsonParse.generate(_encrypt, signature, timestamp, sNonce)  
 
     def DecryptMsg(self, sPostData, sMsgSignature, sTimeStamp, sNonce):
         # 检验消息的真实性，并且获取解密后的明文
