@@ -25,7 +25,6 @@ class MessageVerifyView(View):
                                query_string.get("timestamp")
         reply_message_service = EnterpriseWechatReplyMessageService.create(app_id=app_id,signature=signature, ts=ts,
                                                                            nonce=nonce, data=request.body)
-
         return HttpResponse(reply_message_service.echo())
 
     @csrf_exempt

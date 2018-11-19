@@ -61,21 +61,15 @@ class EnterpriseWechatService(object):
         data = xml2json(data)
         ret, msg = self.wxcpt.DecryptMsg(data, signature, ts, nonce)
         if ret != 0:
-            print(msg)
             raise ValueError(msg)
-        print(msg)
         msg = xmltodict.parse(msg)
         msg = dict(msg).get("xml")
         return msg
 
     def encrpty_msg(self, msg, nonce):
-        print("origin msg", msg)
         msg = json2xml_2(msg)
-        print("before encrpty", msg)
         ret, msg_encrpty = self.wxcpt.EncryptMsg(msg, nonce)
-        print("json str encrptyed: ", msg_encrpty)
         msg = json2xml(json.loads(msg_encrpty))
-        print("wait for format xml", msg)
         return msg
 
 
@@ -88,7 +82,7 @@ class EnterpriseWechatReplyMessageService(object):
     def create(cls, app_id, signature, ts, nonce, data):
         obj = cls()
         obj.app = get_object_or_404(EnterpriseWechatApp, pk=app_id)
-        obj.enterprise_wechat_service = EnterpriseWechatService.create(app)
+        obj.enterprise_wechat_service = EnterpriseWechatService.create(obj.app)
         obj.msg_recv = obj.enterprise_wechat_service.decrpty_msg(signature=signature, ts=ts, nonce=nonce, data=data)
         return obj
 
@@ -96,7 +90,7 @@ class EnterpriseWechatReplyMessageService(object):
         msg = self.msg_recv
         msg = {
             "ToUserName": msg.get("FromUserName"), "FromUserName": msg.get("FromUserName"),
-            "CreateTime": int(time.time()), "MsgType": "text", "Content": msg.get("Content"),
+            "CreateTime": int(time()), "MsgType": "text", "Content": msg.get("Content"),
             "MsgId": msg.get("MsgId"), "AgentID": msg.get("AgentID")
         }
         msg = self.enterprise_wechat_service.encrpty_msg(msg, str(randint(1000000000, 9000000000)))
