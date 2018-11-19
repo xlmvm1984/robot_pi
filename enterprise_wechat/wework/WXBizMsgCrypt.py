@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- encoding:utf-8 -*-
+# -*- encoding:utf-8 -*-
 
 """ 对企业微信发送给企业后台的消息加解密示例代码.
 @copyright: Copyright (c) 1998-2014 Tencent Inc.
@@ -7,7 +7,6 @@
 """
 # ------------------------------------------------------------------------
 
-import logging
 import base64
 import string
 import random
@@ -15,7 +14,6 @@ import hashlib
 import time
 import struct
 from Crypto.Cipher import AES
-import sys
 import socket
 import json
 
@@ -26,6 +24,8 @@ from . import ierror
 请到官方网站 https://www.dlitz.net/software/pycrypto/ 下载pycrypto。
 下载后，按照README中的“Installation”小节的提示进行pycrypto安装。
 """
+
+
 class FormatException(Exception):
     pass
 
@@ -37,6 +37,7 @@ def throw_exception(message, exception_class=FormatException):
 
 class SHA1:
     """计算企业微信的消息签名接口"""
+
     def getSHA1(self, token, timestamp, nonce, encrypt):
         """用SHA1算法生成安全签名
         @param token:  票据
@@ -77,7 +78,7 @@ class JsonParse:
         """
         try:
             json_dict = json.loads(jsontext)
-            return  ierror.WXBizMsgCrypt_OK, json_dict['Encrypt']
+            return ierror.WXBizMsgCrypt_OK, json_dict['Encrypt']
         except Exception as e:
             print(e)
             return ierror.WXBizMsgCrypt_ParseXml_Error, None
@@ -91,11 +92,11 @@ class JsonParse:
         @return: 生成的json字符串
         """
         resp_dict = {
-                    'msg_encrypt' : encrypt,
-                    'msg_signaturet': signature,
-                    'timestamp'    : timestamp,
-                    'nonce'        : nonce,
-                     }
+            'msg_encrypt': encrypt,
+            'msg_signaturet': signature,
+            'timestamp': timestamp,
+            'nonce': nonce,
+        }
         resp_json = self.AES_TEXT_RESPONSE_TEMPLATE % resp_dict
         return resp_json
 
@@ -104,6 +105,7 @@ class PKCS7Encoder():
     """提供基于PKCS7算法的加解密接口"""
 
     block_size = 32
+
     def encode(self, text):
         """ 对需要加密的明文进行填充补位
         @param text: 需要进行填充补位操作的明文
@@ -124,7 +126,7 @@ class PKCS7Encoder():
         @return: 删除补位字符后的明文
         """
         pad = ord(decrypted[-1])
-        if pad<1 or pad >32:
+        if pad < 1 or pad > 32:
             pad = 0
         return decrypted[:-pad]
 
@@ -132,21 +134,21 @@ class PKCS7Encoder():
 class Prpcrypt(object):
     """提供接收和推送给企业微信消息的加解密接口"""
 
-    def __init__(self,key):
+    def __init__(self, key):
 
-        #self.key = base64.b64decode(key+"=")
+        # self.key = base64.b64decode(key+"=")
         self.key = key
         # 设置加解密模式为AES的CBC模式
         self.mode = AES.MODE_CBC
 
-
-    def encrypt(self,text,receiveid):
+    def encrypt(self, text, receiveid):
         """对明文进行加密
         @param text: 需要加密的明文
         @return: 加密得到的字符串
         """
         # 16位随机字符串添加到明文开头
-        text = bytes(self.get_random_str(), encoding="utf8") + struct.pack("I",socket.htonl(len(text))) + bytes(text, encoding="utf8") + bytes(receiveid, encoding="utf8")
+        text = bytes(self.get_random_str(), encoding="utf8") + struct.pack("I", socket.htonl(
+            len(text))) + bytes(text, encoding="utf8") + bytes(receiveid, encoding="utf8")
         # 使用自定义的填充方式对明文进行补位填充
         pkcs7 = PKCS7Encoder()
         text = pkcs7.encode(text)
@@ -158,9 +160,9 @@ class Prpcrypt(object):
             return ierror.WXBizMsgCrypt_OK, base64.b64encode(ciphertext)
         except Exception as e:
             print(e)
-            return ierror.WXBizMsgCrypt_EncryptAES_Error,None
+            return ierror.WXBizMsgCrypt_EncryptAES_Error, None
 
-    def decrypt(self,text, receiveid):
+    def decrypt(self, text, receiveid):
         """对解密后的明文进行补位删除
         @param text: 密文
         @return: 删除填充补位后的明文
@@ -177,16 +179,16 @@ class Prpcrypt(object):
             # 去除16位随机字符串
             content = plain_text[16:-pad]
             json_len = socket.ntohl(struct.unpack("I", content[: 4])[0])
-            json_content = content[4 : json_len+4].decode("utf8")
-            from_receiveid = content[json_len+4:].decode("utf8")
+            json_content = content[4: json_len + 4].decode("utf8")
+            from_receiveid = content[json_len + 4:].decode("utf8")
         except Exception as e:
             print(e)
             import traceback
             traceback.print_exc()
-            return  ierror.WXBizMsgCrypt_IllegalBuffer,None
+            return ierror.WXBizMsgCrypt_IllegalBuffer, None
 
-        if  from_receiveid != receiveid:
-            return ierror.WXBizMsgCrypt_ValidateCorpid_Error,None
+        if from_receiveid != receiveid:
+            return ierror.WXBizMsgCrypt_ValidateCorpid_Error, None
         return 0, json_content
 
     def get_random_str(self):
@@ -199,57 +201,61 @@ class Prpcrypt(object):
 
 
 class WXBizMsgCrypt(object):
-    #构造函数
-    def __init__(self,sToken,sEncodingAESKey,sReceiveId):
+    # 构造函数
+    def __init__(self, sToken, sEncodingAESKey, sReceiveId):
         try:
-            self.key = base64.b64decode(sEncodingAESKey+"=")
+            self.key = base64.b64decode(sEncodingAESKey + "=")
             assert len(self.key) == 32
-        except:
-            throw_exception("[error]: EncodingAESKey unvalid !", FormatException)
+        except Exception as e:
+            print(e)
+            throw_exception(
+                "[error]: EncodingAESKey unvalid !", FormatException)
             # return ierror.WXBizMsgCrypt_IllegalAesKey,None
         self.m_sToken = sToken
         self.m_sReceiveId = sReceiveId
 
-         #验证URL
-         #@param sMsgSignature: 签名串，对应URL参数的msg_signature
-         #@param sTimeStamp: 时间戳，对应URL参数的timestamp
-         #@param sNonce: 随机串，对应URL参数的nonce
-         #@param sEchoStr: 随机串，对应URL参数的echostr
-         #@param sReplyEchoStr: 解密之后的echostr，当return返回0时有效
-         #@return：成功0，失败返回对应的错误码
+        # 验证URL
+        # @param sMsgSignature: 签名串，对应URL参数的msg_signature
+        # @param sTimeStamp: 时间戳，对应URL参数的timestamp
+        # @param sNonce: 随机串，对应URL参数的nonce
+        # @param sEchoStr: 随机串，对应URL参数的echostr
+        # @param sReplyEchoStr: 解密之后的echostr，当return返回0时有效
+        # @return：成功0，失败返回对应的错误码
 
     def VerifyURL(self, sMsgSignature, sTimeStamp, sNonce, sEchoStr):
         sha1 = SHA1()
-        ret,signature = sha1.getSHA1(self.m_sToken, sTimeStamp, sNonce, sEchoStr)
+        ret, signature = sha1.getSHA1(
+            self.m_sToken, sTimeStamp, sNonce, sEchoStr)
         if ret != 0:
             return ret, None
         if not signature == sMsgSignature:
             return ierror.WXBizMsgCrypt_ValidateSignature_Error, None
         pc = Prpcrypt(self.key)
-        ret,sReplyEchoStr = pc.decrypt(sEchoStr, self.m_sReceiveId)
+        ret, sReplyEchoStr = pc.decrypt(sEchoStr, self.m_sReceiveId)
         return ret, sReplyEchoStr
 
-    def EncryptMsg(self, sReplyMsg, sNonce, timestamp = None):
-        #将企业回复用户的消息加密打包
-        #@param sReplyMsg: 企业号待回复用户的消息，xml格式的字符串
-        #@param sTimeStamp: 时间戳，可以自己生成，也可以用URL参数的timestamp,如为None则自动用当前时间
-        #@param sNonce: 随机串，可以自己生成，也可以用URL参数的nonce
-        #sEncryptMsg: 加密后的可以直接回复用户的密文，包括msg_signature, timestamp, nonce, encrypt的json格式的字符串,
-        #return：成功0，sEncryptMsg,失败返回对应的错误码None
+    def EncryptMsg(self, sReplyMsg, sNonce, timestamp=None):
+        # 将企业回复用户的消息加密打包
+        # @param sReplyMsg: 企业号待回复用户的消息，xml格式的字符串
+        # @param sTimeStamp: 时间戳，可以自己生成，也可以用URL参数的timestamp,如为None则自动用当前时间
+        # @param sNonce: 随机串，可以自己生成，也可以用URL参数的nonce
+        # sEncryptMsg: 加密后的可以直接回复用户的密文，包括msg_signature, timestamp, nonce, encrypt的json格式的字符串,
+        # return：成功0，sEncryptMsg,失败返回对应的错误码None
         pc = Prpcrypt(self.key)
-        ret,encrypt = pc.encrypt(sReplyMsg, self.m_sReceiveId)
+        ret, encrypt = pc.encrypt(sReplyMsg, self.m_sReceiveId)
         if ret != 0:
-            return ret,None
+            return ret, None
         if timestamp is None:
             timestamp = str(int(time.time()))
         # 生成安全签名
         sha1 = SHA1()
         _encrypt = str(encrypt, encoding="utf8")
-        ret,signature = sha1.getSHA1(self.m_sToken, timestamp, sNonce, _encrypt)
+        ret, signature = sha1.getSHA1(
+            self.m_sToken, timestamp, sNonce, _encrypt)
         if ret != 0:
             return ret, None
         jsonParse = JsonParse()
-        return ret,jsonParse.generate(_encrypt, signature, timestamp, sNonce)
+        return ret, jsonParse.generate(_encrypt, signature, timestamp, sNonce)
 
     def DecryptMsg(self, sPostData, sMsgSignature, sTimeStamp, sNonce):
         # 检验消息的真实性，并且获取解密后的明文
@@ -259,19 +265,20 @@ class WXBizMsgCrypt(object):
         # @param sPostData: 密文，对应POST请求的数据
         #  json_content: 解密后的原文，当return返回0时有效
         # @return: 成功0，失败返回对应的错误码
-         # 验证安全签名
+        # 验证安全签名
         jsonParse = JsonParse()
-        ret,encrypt = jsonParse.extract(sPostData)
+        ret, encrypt = jsonParse.extract(sPostData)
         if ret != 0:
             return ret, None
         sha1 = SHA1()
-        ret,signature = sha1.getSHA1(self.m_sToken, sTimeStamp, sNonce, encrypt)
-        if ret  != 0:
+        ret, signature = sha1.getSHA1(
+            self.m_sToken, sTimeStamp, sNonce, encrypt)
+        if ret != 0:
             return ret, None
         if not signature == sMsgSignature:
             print("signature not match")
             print(signature)
             return ierror.WXBizMsgCrypt_ValidateSignature_Error, None
         pc = Prpcrypt(self.key)
-        ret, json_content = pc.decrypt(encrypt,self.m_sReceiveId)
+        ret, json_content = pc.decrypt(encrypt, self.m_sReceiveId)
         return ret, json_content

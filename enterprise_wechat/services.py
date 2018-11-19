@@ -1,8 +1,8 @@
 #!coding:utf8
-from random import randint
+from random import randint, random
 from time import time
-from .wework.CorpApi import CorpApi
-from .wework.WXBizMsgCrypt import WXBizMsgCrypt, Prpcrypt
+from .wework.CorpApi import CorpApi, CORP_API_TYPE
+from .wework.WXBizMsgCrypt import WXBizMsgCrypt
 from .models import EnterpriseWechatApp
 from django.shortcuts import get_object_or_404
 import xml.etree.cElementTree as ET
@@ -46,7 +46,8 @@ class EnterpriseWechatService(object):
         core_api = CorpApi(app)
         core_api.refreshAccessToken()
         obj.core_api = core_api
-        obj.wxcpt = WXBizMsgCrypt(obj.app.message_token, obj.app.message_aes_key, obj.app.corp_id)
+        obj.wxcpt = WXBizMsgCrypt(
+            obj.app.message_token, obj.app.message_aes_key, obj.app.corp_id)
         return obj
 
     def verify_url(self, signature, ts, nonce, echostr):
@@ -83,7 +84,8 @@ class EnterpriseWechatReplyMessageService(object):
         obj = cls()
         obj.app = get_object_or_404(EnterpriseWechatApp, pk=app_id)
         obj.enterprise_wechat_service = EnterpriseWechatService.create(obj.app)
-        obj.msg_recv = obj.enterprise_wechat_service.decrpty_msg(signature=signature, ts=ts, nonce=nonce, data=data)
+        obj.msg_recv = obj.enterprise_wechat_service.decrpty_msg(
+            signature=signature, ts=ts, nonce=nonce, data=data)
         return obj
 
     def echo(self):
@@ -93,5 +95,38 @@ class EnterpriseWechatReplyMessageService(object):
             "CreateTime": int(time()), "MsgType": "text", "Content": msg.get("Content"),
             "MsgId": msg.get("MsgId"), "AgentID": msg.get("AgentID")
         }
-        msg = self.enterprise_wechat_service.encrpty_msg(msg, str(randint(1000000000, 9000000000)))
+        msg = self.enterprise_wechat_service.encrpty_msg(
+            msg, str(randint(1000000000, 9000000000)))
         return msg
+
+
+class EnterpriseWechatSendMessageService(object):
+    app = None
+    enterprise_wechat_service = None
+
+    @classmethod
+    def create(cls, app_id):
+        obj = cls()
+        obj.app = get_object_or_404(EnterpriseWechatApp, pk=app_id)
+        obj.enterprise_wechat_service = EnterpriseWechatService.create(obj.app)
+        return obj
+
+    def send_text(self, user_id_list, text):
+        try:
+            ##
+            response = self.enterprise_wechat_service.core_api.httpCall(
+                CORP_API_TYPE['MESSAGE_SEND'],
+                {
+                    "touser": "|".join(user_id_list) if isinstance(user_id_list, list) else user_id_list,
+                    "agentid": 1000002,
+                    'msgtype': 'text',
+                    'climsgid': 'climsgidclimsgid_%f' % (random()),
+                    'text': {
+                        'content': text,
+                    },
+                    'safe': 0,
+                })
+            print(response)
+            return response
+        except Exception as e:
+            print(e.errCode, e.errMsg)

@@ -15,7 +15,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='EnterpriseWechatAccessToken',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('access_token', models.CharField(max_length=1024)),
                 ('expire_in', models.IntegerField()),
                 ('created', models.DateTimeField(auto_now_add=True)),
@@ -24,7 +25,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='EnterpriseWechatApp',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('corp_id', models.CharField(max_length=1024)),
                 ('corp_secret', models.CharField(max_length=1024)),
             ],
@@ -32,6 +34,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='enterprisewechataccesstoken',
             name='enterprise_wechat_app',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='enterprise_wechat.EnterpriseWechatApp'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to='enterprise_wechat.EnterpriseWechatApp'),
         ),
     ]

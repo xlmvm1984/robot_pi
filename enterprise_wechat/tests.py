@@ -17,14 +17,16 @@ class EnterpriseWechatServiceTests(TestCase):
                                        message_aes_key="THBjcgz75TBLMPizigJkarLYtHFP5DfwYW1pcxmJ9oE",
                                        )
         self.app.save()
-        self.enterprise_wechat_service = EnterpriseWechatService.create(self.app)
+        self.enterprise_wechat_service = EnterpriseWechatService.create(
+            self.app)
 
     def test_fetch_accesss_token(self):
         self.assertIsNotNone(self.enterprise_wechat_service.core_api._token)
-        self.assertIsNotNone(self.enterprise_wechat_service.core_api.access_token)
+        self.assertIsNotNone(
+            self.enterprise_wechat_service.core_api.access_token)
 
     def test_encrption_decryption(self):
-        prp = Prpcrypt(base64.b64decode(self.app.message_aes_key+"="))
+        prp = Prpcrypt(base64.b64decode(self.app.message_aes_key + "="))
         random_str = str(uuid1())
         ret, encrpty_str = prp.encrypt(random_str, self.app.corp_id)
         self.assertIs(ret, 0)

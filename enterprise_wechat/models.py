@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
 
 # Create your models here.
@@ -23,8 +23,8 @@ class EnterpriseWechatAccessToken(models.Model):
     expire_in = models.IntegerField()
     created = models.DateTimeField(auto_now_add=True)
     # Every access_token is belong to a app.
-    enterprise_wechat_app = models.ForeignKey(EnterpriseWechatApp, on_delete=models.CASCADE)
+    enterprise_wechat_app = models.ForeignKey(
+        EnterpriseWechatApp, on_delete=models.CASCADE)
 
     def is_expire(self):
         return timezone.now() > (self.created + timedelta(seconds=self.expire_in))
-

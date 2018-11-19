@@ -10,4 +10,5 @@ class EnterpriseWechatAppAdmin(admin.ModelAdmin):
 
 @admin.register(EnterpriseWechatAccessToken)
 class EnterpriseWechatAccessTokenAdmin(admin.ModelAdmin):
-    list_display = ["pk", "enterprise_wechat_app", "access_token", "expire_in", "created"]
+    list_display = ["pk", "enterprise_wechat_app",
+                    "access_token", "expire_in", "created"]
