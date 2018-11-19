@@ -1,6 +1,10 @@
 #!coding:utf8
+from random import randint
+from time import time
 from .wework.CorpApi import CorpApi
 from .wework.WXBizMsgCrypt import WXBizMsgCrypt, Prpcrypt
+from .models import EnterpriseWechatApp
+from django.shortcuts import get_object_or_404
 import xml.etree.cElementTree as ET
 import json
 import xmltodict
@@ -29,6 +33,7 @@ def json2xml_2(json_obj):
         node.text = str(val)
     msg = str(ET.tostring(xml), encoding="utf8")
     return msg
+
 
 class EnterpriseWechatService(object):
     app = None
@@ -71,4 +76,28 @@ class EnterpriseWechatService(object):
         print("json str encrptyed: ", msg_encrpty)
         msg = json2xml(json.loads(msg_encrpty))
         print("wait for format xml", msg)
+        return msg
+
+
+class EnterpriseWechatReplyMessageService(object):
+    msg_recv = None
+    app = None
+    enterprise_wechat_service = None
+
+    @classmethod
+    def create(cls, app_id, signature, ts, nonce, data):
+        obj = cls()
+        obj.app = get_object_or_404(EnterpriseWechatApp, pk=app_id)
+        obj.enterprise_wechat_service = EnterpriseWechatService.create(app)
+        obj.msg_recv = obj.enterprise_wechat_service.decrpty_msg(signature=signature, ts=ts, nonce=nonce, data=data)
+        return obj
+
+    def echo(self):
+        msg = self.msg_recv
+        msg = {
+            "ToUserName": msg.get("FromUserName"), "FromUserName": msg.get("FromUserName"),
+            "CreateTime": int(time.time()), "MsgType": "text", "Content": msg.get("Content"),
+            "MsgId": msg.get("MsgId"), "AgentID": msg.get("AgentID")
+        }
+        msg = self.enterprise_wechat_service.encrpty_msg(msg, str(randint(1000000000, 9000000000)))
         return msg
