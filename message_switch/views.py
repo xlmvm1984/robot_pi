@@ -7,9 +7,6 @@ from .services import RobotInboundService
 
 # Create your views here.
 class RobotInboundView(View):
-    def get(self, request, uuid):
-        return HttpResponse("uuid is ", uuid)
-
     def post(self, request, uuid):
         try:
             s = RobotInboundService.create(uuid, request.body)
