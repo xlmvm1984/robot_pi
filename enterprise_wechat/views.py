@@ -33,11 +33,11 @@ class MessageVerifyView(View):
         enterprise_wechat_service = EnterpriseWechatService.create(app)
         msg = enterprise_wechat_service.decrpty_msg(signature=signature, ts=ts, nonce=nonce, data=request.body)
         print("=====message found : ", msg)
-        msg_str = json.dumps({
+        msg = {
             "ToUserName": msg.get("FromUserName"), "FromUserName": msg.get("FromUserName"),
-            "CreateTime": int(time.time()), "MsgType": "text", "Content": msg.get("Content"), "MsgId": msg.get("MsgId"),
-            "AgentID": msg.get("AgentID")
-        })
+            "CreateTime": int(time.time()), "MsgType": "text", "Content": msg.get("Content"),
+            "MsgId": msg.get("MsgId"), "AgentID": msg.get("AgentID")
+        }
         msg = enterprise_wechat_service.encrpty_msg(msg, nonce)
         print("===="*20)
         print(msg)

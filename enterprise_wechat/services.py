@@ -23,22 +23,12 @@ def json2xml(json_obj):
 
 
 def json2xml_2(json_obj):
-    AES_TEXT_RESPONSE_TEMPLATE = """<xml>
-<ToUserName><![CDATA[%(ToUserName)s]]></ToUserName>
-<FromUserName><![CDATA[%(FromUserName)s]]></FromUserName>
-<CreateTime>%(CreateTime)s</CreateTime>
-<MsgType><![CDATA[%(MsgType)s]]></MsgType>
-<Content><![CDATA[%(Content)s]]></Content>
-<MsgId>%(MsgId)s</MsgId>
-<AgentID>%(AgentID)s</AgentID>
-</xml>"""
-    msg = AES_TEXT_RESPONSE_TEMPLATE % json_obj
-    msg = msg.replace("\n", "")
+    xml = ET.Element("xml")
+    for key, val in json_obj.items():
+        node = ET.SubElement(xml, key)
+        node.text = str(val)
+    msg = str(ET.tostring(xml), encoding="utf8")
     return msg
-
-
-
-
 
 class EnterpriseWechatService(object):
     app = None
@@ -78,10 +68,7 @@ class EnterpriseWechatService(object):
         msg = json2xml_2(msg)
         print("before encrpty", msg)
         ret, msg_encrpty = self.wxcpt.EncryptMsg(msg, nonce)
-        print(msg_encrpty)
+        print("json str encrptyed: ", msg_encrpty)
         msg = json2xml(json.loads(msg_encrpty))
-        pc = Prpcrypt(self.wxcpt.key)
-        print("---"*10)
-        print(pc.decrypt(msg_encrpty, self.wxcpt.m_sReceiveId))
-        print("---"*10)
+        print("wait for format xml", msg)
         return msg
