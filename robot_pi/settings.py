@@ -32,6 +32,8 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", os.getenv("ALLOWED_HOST")]
 
 INSTALLED_APPS = [
     'enterprise_wechat.apps.EnterpriseWechatConfig',
+    'message_switch.apps.MessageSwitchConfig',
+    'user_mgmt.apps.UserMgmtConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

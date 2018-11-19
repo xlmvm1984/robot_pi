@@ -1,6 +1,7 @@
 #!coding:utf8
 from random import randint, random
 from time import time
+from django.utils import timezone
 from .wework.CorpApi import CorpApi, CORP_API_TYPE
 from .wework.WXBizMsgCrypt import WXBizMsgCrypt
 from .models import EnterpriseWechatApp
@@ -113,7 +114,6 @@ class EnterpriseWechatSendMessageService(object):
 
     def send_text(self, user_id_list, text):
         try:
-            ##
             response = self.enterprise_wechat_service.core_api.httpCall(
                 CORP_API_TYPE['MESSAGE_SEND'],
                 {
@@ -126,7 +126,27 @@ class EnterpriseWechatSendMessageService(object):
                     },
                     'safe': 0,
                 })
-            print(response)
             return response
         except Exception as e:
-            print(e.errCode, e.errMsg)
+            print(e)
+
+    def send_card_msg(self, user_id_list, title, text):
+        try:
+            response = self.enterprise_wechat_service.core_api.httpCall(
+                CORP_API_TYPE['MESSAGE_SEND'],
+                {
+                    "touser": "|".join(user_id_list) if isinstance(user_id_list, list) else user_id_list,
+                    "agentid": 1000002,
+                    'msgtype': 'textcard',
+                    'climsgid': 'climsgidclimsgid_%f' % (random()),
+                    'textcard': {
+                        'title': title,
+                        'description': '<div class=\"gray\">%s</div> <div class=\"normal\">%s</div>' % (
+                            str(timezone.now())[:19], text),
+                        'url': "https://www.baidu.com",
+                    },
+                    'safe': 0,
+                })
+            return response
+        except Exception as e:
+            print(e)

@@ -19,4 +19,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/wework/', include('enterprise_wechat.urls')),
+    path('api/robot/', include('message_switch.urls')),
 ]
