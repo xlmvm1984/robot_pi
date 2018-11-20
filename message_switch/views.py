@@ -9,7 +9,7 @@ from .services import RobotInboundService
 class RobotInboundView(View):
     def post(self, request, uuid):
         try:
-            s = RobotInboundService.create(uuid, request.body)
+            s = RobotInboundService.create(uuid, request.body, request.META)
             ret = s.send()
             print(ret)
             return JsonResponse(ret)
