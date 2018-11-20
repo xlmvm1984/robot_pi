@@ -1,21 +1,21 @@
 #!coding:utf8
+import json
 
 
 class BaseParser(object):
-    name = None
     raw = None
 
     @classmethod
-    def create(cls, data):
-        if isinstance(data, bytes):
-            _data = str(data, encoding="utf8")
-        else:
-            _data = data
+    def create(cls, data, headers=None):
+        _data = data if isinstance(data, str) else str(data, encoding="utf8")
         obj = cls()
-        obj.raw = obj
+        obj.raw = _data
+        obj.headers = headers
+        return obj
 
     def parse(self):
         raise NotImplementedError
 
     def _format(self, data):
-        """:return {"title": TITLE, "text": TEXT, ""}"""
+        return {"url": data.get("url"), "text": data.get("text"), "title": data.get("title"),
+                "highlight": data.get("highlight")}

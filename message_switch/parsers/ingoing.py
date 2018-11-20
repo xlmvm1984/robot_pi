@@ -4,8 +4,11 @@ from . import BaseParser
 
 
 class IngoingParser(BaseParser):
-    name = "ingoing"
 
     def parse(self):
         data = json.loads(self.raw)
+        return self._format(data)
 
+
+parser = IngoingParser
+name = "ingoing"
