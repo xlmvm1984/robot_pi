@@ -118,7 +118,7 @@ class EnterpriseWechatSendMessageService(object):
                 CORP_API_TYPE['MESSAGE_SEND'],
                 {
                     "touser": "|".join(user_id_list) if isinstance(user_id_list, list) else user_id_list,
-                    "agentid": 1000002,
+                    "agentid": self.app.agent_id,
                     'msgtype': 'text',
                     'climsgid': 'climsgidclimsgid_%f' % (random()),
                     'text': {
