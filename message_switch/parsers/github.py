@@ -44,6 +44,11 @@ class GithubParser(BaseParser):
         url = self.payload.get("compare")
         return dict(url=url, text=text)
 
+    def _pull_request_parser(self):
+        pr = self.payload.get("pull_request")
+        text = "%s is %s\n%s" % (pr.get("title"), pr.get("status"), pr.get("body"))
+        url = rp.get("url")
+
 
 parser = GithubParser
 name = "github"
