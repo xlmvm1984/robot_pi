@@ -50,6 +50,11 @@ class GithubParser(BaseParser):
         text = "[%s]%s: %s" % (action, comment.get("user").get("login"), comment.get("body"))
         url = comment.get("url")
 
+    def _pull_request_parser(self):
+        pr = self.payload.get("pull_request")
+        text = "%s is %s\n%s" % (pr.get("title"), pr.get("status"), pr.get("body"))
+        url = rp.get("url")
+
 
 parser = GithubParser
 name = "github"
