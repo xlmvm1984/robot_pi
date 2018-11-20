@@ -24,8 +24,8 @@ class GithubParser(BaseParser):
         self.sender = self.payload.get("sender")
         action = "_%s_parser" % self.event
         data = getattr(self, action)()
-        data.update(title="GitHub RobotPi")
-        data.update(highlight="Repository: %s" % self.repository.get("name"))
+        data["title"]="GitHub: %s" % self.repository.get("name")
+        data["highlight"] = "Author: %s" % self.sender.get("login")
         return self._format(data)
 
     def get_event(self):
@@ -40,10 +40,9 @@ class GithubParser(BaseParser):
         return ret
 
     def _push_parser(self):
-        text = "<p>% pushed</p>" % self.payload.get("pusher").get("name")
-        text += "".join(["<p>%s</p>" for r in self.payload.get("commits")])
+        text = "\n".join(["- %s" % r.get("message") for r in self.payload.get("commits")])
         url = self.payload.get("compare")
-        return dict(title=title, url=url, text=text)
+        return dict(url=url, text=text)
 
 
 parser = GithubParser
