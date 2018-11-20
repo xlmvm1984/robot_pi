@@ -44,10 +44,16 @@ class GithubParser(BaseParser):
         url = self.payload.get("compare")
         return dict(url=url, text=text)
 
+    def _pull_request_review_comment_parser(self):
+        action = self.payload.get("action")
+        comment = self.payload.get("comment")
+        text = "[%s]%s: %s" % (action, comment.get("user").get("login"), comment.get("body"))
+        url = comment.get("url")
+
     def _pull_request_parser(self):
         pr = self.payload.get("pull_request")
         text = "%s is %s\n%s" % (pr.get("title"), pr.get("status"), pr.get("body"))
-        url = rp.get("url")
+        url = pr.get("url")
 
 
 parser = GithubParser
