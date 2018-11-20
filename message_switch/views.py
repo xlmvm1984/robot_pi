@@ -12,7 +12,7 @@ class RobotInboundView(View):
             s = RobotInboundService.create(uuid, request.body, request.META)
             ret = s.send()
             print(ret)
-            return JsonResponse(ret)
+            return JsonResponse({"errorcode":0, "data": ret})
         except Exception as e:
             import traceback
             traceback.print_exc()

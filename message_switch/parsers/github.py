@@ -6,7 +6,7 @@ Supported Event Type:
 - push
 """
 import json
-from . import BaseParser
+from . import BaseParser, ParserError
 
 __version__ = 0.1
 
@@ -25,7 +25,7 @@ class GithubParser(BaseParser):
         action = "_%s_parser" % self.event
         data = getattr(self, action)()
         data["title"]="GitHub: %s" % self.repository.get("name") if self.repository else None
-        data["highlight"] = "Author: %s" % self.sender.get("login")
+        data["highlight"] = "%s: %s" % (self.sender.get("login"), self.event.replace("_", " "))
         return self._format(data)
 
     def get_event(self):
@@ -40,6 +40,11 @@ class GithubParser(BaseParser):
         return ret
 
     def _push_parser(self):
+        ref = self.payload.get("ref")
+        branch = ref.split("/")[-1]
+        if not branch == "master":
+            raise ParserError("Not on master branch, droped")
+
         text = "\n".join(["- %s" % r.get("message") for r in self.payload.get("commits")])
         url = self.payload.get("compare")
         return dict(url=url, text=text)
@@ -53,8 +58,8 @@ class GithubParser(BaseParser):
 
     def _pull_request_parser(self):
         pr = self.payload.get("pull_request")
-        text = "%s is %s\n%s" % (pr.get("title"), pr.get("status"), pr.get("body"))
-        url = pr.get("url")
+        text = "Pull request: '%s' is %s\ncontent: %s" % (pr.get("title"), self.payload.get("action"), pr.get("body"))
+        url = pr.get("html_url")
         return dict(url=url, text=text)
 
 

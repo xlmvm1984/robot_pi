@@ -2,6 +2,10 @@
 import json
 
 
+class ParserError(Exception):
+    pass
+
+
 class BaseParser(object):
     raw = None
 
