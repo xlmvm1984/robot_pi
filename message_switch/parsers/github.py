@@ -24,7 +24,7 @@ class GithubParser(BaseParser):
         self.sender = self.payload.get("sender")
         action = "_%s_parser" % self.event
         data = getattr(self, action)()
-        data["title"]="GitHub: %s" % self.repository.get("name")
+        data["title"]="GitHub: %s" % self.repository.get("name") if self.repository else None
         data["highlight"] = "Author: %s" % self.sender.get("login")
         return self._format(data)
 
@@ -49,11 +49,13 @@ class GithubParser(BaseParser):
         comment = self.payload.get("comment")
         text = "[%s]%s: %s" % (action, comment.get("user").get("login"), comment.get("body"))
         url = comment.get("url")
+        return dict(url=url, text=text)
 
     def _pull_request_parser(self):
         pr = self.payload.get("pull_request")
         text = "%s is %s\n%s" % (pr.get("title"), pr.get("status"), pr.get("body"))
         url = pr.get("url")
+        return dict(url=url, text=text)
 
 
 parser = GithubParser
