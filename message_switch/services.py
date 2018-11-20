@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from enterprise_wechat.services import EnterpriseWechatSendMessageService
 from user_mgmt.models import User
 from robot_pi.settings import DEFAULT_WEWORK_URL
+from .parsers import ParserError
 
 
 def import_parsers():
@@ -26,14 +27,18 @@ class RobotInboundService(object):
     robot = None
     data = None
     headers = None
+    error_msg = None
 
     @classmethod
     def create(cls, uuid, data, headers=None):
         obj = cls()
         obj.robot = get_object_or_404(RobotPi, uuid=uuid)
         parser = supported_parsers[obj.robot.type_name].create(data, headers)
-        obj.data = parser.parse()
-        obj.headers = headers  # some webhook put infomation in headers
+        try:
+            obj.data = parser.parse()
+            obj.headers = headers  # some webhook put infomation in headers
+        except ParserError as e:
+            obj.error_msg = e.args[0]
         return obj
 
     def _send_to_wework(self, user_id):
@@ -43,5 +48,8 @@ class RobotInboundService(object):
 
     def send(self):
         user = get_object_or_404(User, pk=self.robot.user_id)
+        if not self.data:
+            # nothing to send
+            return self.error_msg or "Nothing to send"
         if user.wework_id != "":
             return self._send_to_wework(user.wework_id)
