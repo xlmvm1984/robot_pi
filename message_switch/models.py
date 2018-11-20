@@ -13,6 +13,6 @@ ROBOT_TYPE_LIST = (
 # Create your models here.
 class RobotPi(models.Model):
     uuid = models.CharField(max_length=256)
-    type_id = models.IntegerField()
+    type_name = models.CharField(max_length=256, default="")
     user_id = models.IntegerField()
     app_id = models.IntegerField()
