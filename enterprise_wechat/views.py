@@ -9,7 +9,7 @@ from .models import EnterpriseWechatApp
 # Create your views here.
 
 
-class MessageVerifyView(View):
+class MessageReceiveView(View):
     def get(self, request, app_id):
         query_string = request.GET
         signature, echostr, nonce, ts = query_string.get("msg_signature"), query_string.get("echostr"),
@@ -30,4 +30,4 @@ class MessageVerifyView(View):
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
-        return super(MessageVerifyView, self).dispatch(*args, **kwargs)
+        return super(MessageReceiveView, self).dispatch(*args, **kwargs)

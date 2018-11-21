@@ -1,14 +1,16 @@
 #!coding:utf8
 from random import randint, random
-from time import time
 from django.utils import timezone
-from .wework.CorpApi import CorpApi, CORP_API_TYPE
-from .wework.WXBizMsgCrypt import WXBizMsgCrypt
-from .models import EnterpriseWechatApp
 from django.shortcuts import get_object_or_404
+from time import time
+
 import xml.etree.cElementTree as ET
 import json
 import xmltodict
+
+from .wework.CorpApi import CorpApi, CORP_API_TYPE
+from .wework.WXBizMsgCrypt import WXBizMsgCrypt
+from .models import EnterpriseWechatApp, EnterpriseWechatUser
 
 
 def xml2json(xml_str):
@@ -152,3 +154,30 @@ class EnterpriseWechatSendMessageService(object):
             return response
         except Exception as e:
             print(e)
+
+
+class EnterpriseWechatUserService(object):
+    enterprise_wechat_service = None
+    app = None
+
+    @classmethod
+    def create(cls, app_id):
+        obj = cls()
+        obj.app = get_object_or_404(EnterpriseWechatApp, pk=app_id)
+        obj.enterprise_wechat_service = EnterpriseWechatService.create(obj.app)
+        return obj
+
+    def fetch_user(self, user_id):
+        try:
+            response = self.enterprise_wechat_service.core_api.httpCall(CORP_API_TYPE['USER_GET'], {'userid': user_id})
+            data = dict(user_id=user_id, name=response.get("name"), mobile=response.get("mobile"),
+                        gender=response.get("gender"), avatar=response.get("avatar"))
+            obj, create = EnterpriseWechatUser.objects.update_or_create(user_id=user_id, defaults=data)
+            return obj
+        except Exception as e:
+            print(e)
+            return None
+
+
+class EnterpriseWechatEventService(object):
+    pass
