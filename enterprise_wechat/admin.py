@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import EnterpriseWechatApp, EnterpriseWechatAccessToken
+from .models import EnterpriseWechatApp, EnterpriseWechatAccessToken, EnterpriseWechatUser
 
 
 # Register your models here.
@@ -12,3 +12,12 @@ class EnterpriseWechatAppAdmin(admin.ModelAdmin):
 class EnterpriseWechatAccessTokenAdmin(admin.ModelAdmin):
     list_display = ["pk", "enterprise_wechat_app",
                     "access_token", "expire_in", "created"]
+
+
+@admin.register(EnterpriseWechatUser)
+class EnterpriseWechatUserAdmin(admin.ModelAdmin):
+    list_display = ['pk', 'name', 'user_id', 'gender_name', 'mobile']
+
+    def gender_name(self, item):
+        names = {0: "unknown", 1: "male", 2: "female"}
+        return names.get(item.gender)
